@@ -44,3 +44,14 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## Improvements
+
+- be able to choose from available languages rather than specifying the two letters
+- Logging to splunk or something
+- Unit and integration tests
+- Typescript for server part
+- be able to subscribe from beginning of tweets (Kafka pub/sub)
+- Light/Dark theme
+- Authentication
+- User feedback
