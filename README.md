@@ -1,13 +1,13 @@
 # Instructions
 
-`yarn install`
+`yarn install` then
 `yarn start`
 Open [http://localhost:3000](http://localhost:3000)
 
 ## Assumptions Made
 
-- lang in tweet is lower case
 - it is ok to stream a certain percentage of tweets instead of always 100%
+- lang in tweet is lower case
 - the middleware/nodejs throttles messages to client by 50ms (default can be adjusted)
 
 ## Thought Process

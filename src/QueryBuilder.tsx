@@ -1,4 +1,3 @@
-import { Intent } from "@blueprintjs/core";
 import {
   BasicConfig,
   Builder,

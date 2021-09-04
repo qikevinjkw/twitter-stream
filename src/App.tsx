@@ -1,4 +1,4 @@
-import { Button, Intent } from "@blueprintjs/core";
+import { Button } from "@blueprintjs/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ImmutableTree, Utils as QbUtils } from "react-awesome-query-builder";
 import "react-awesome-query-builder/lib/css/styles.css";

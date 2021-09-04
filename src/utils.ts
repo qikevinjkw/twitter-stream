@@ -33,8 +33,7 @@ jsonLogic.add_operation("regexp_matches", function (pattern, subject) {
   }
   return pattern.test(subject);
 });
-//   jsonLogic.apply({"regexp_matches": ["\\w+(ing)\\w+", "ingest"]});
-export const hashTagRegex = new RegExp(/\B(\#[a-zA-Z]+\b)(?!;)/g);
+export const hashTagRegex = new RegExp(/\B(#[a-zA-Z]+\b)(?!;)/g);
 
 jsonLogic.add_operation("case_insensitive_in", function (wordToMatch, subject) {
   return subject.toLowerCase().includes(wordToMatch);
