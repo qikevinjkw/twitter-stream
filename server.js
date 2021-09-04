@@ -47,6 +47,9 @@ app.ws("/", (ws, req) => {
 app.get("/", (req, res) => {
   res.sendStatus(200);
 });
+app.get("/test", (req, res) => {
+  res.json({ test: "hi" });
+});
 
 app.listen(process.env.PORT || 4000, () => {
   console.log("Listening on port 4000");
