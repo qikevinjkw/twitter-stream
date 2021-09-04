@@ -1,4 +1,4 @@
-import { Button, Card, Icon, Intent } from "@blueprintjs/core";
+import { Button, Card, Icon, Intent, Slider } from "@blueprintjs/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Builder,
@@ -9,56 +9,29 @@ import {
 import "react-awesome-query-builder/lib/css/styles.css";
 import "./App.css";
 import { InitialQueryValue, QueryBuilderConfig } from "./QueryBuilder";
-import jsonLogic from "json-logic-js";
+import jsonLogic, { RulesLogic } from "json-logic-js";
 import { format } from "date-fns";
 import { useVirtual } from "react-virtual";
+import { countryShorthandToEmojii, hashTagRegex, Tweet } from "./utils";
+import { Tooltip2 } from "@blueprintjs/popover2";
 
-jsonLogic.add_operation("regexp_matches", function (pattern, subject) {
-  if (typeof pattern === "string") {
-    pattern = new RegExp(pattern);
-  }
-  return pattern.test(subject);
-});
-//   jsonLogic.apply({"regexp_matches": ["\\w+(ing)\\w+", "ingest"]});
-
-const letterA = "a".codePointAt(0) as number;
-const regionalIndicatorA = "🇦".codePointAt(0) as number;
-
-const toRegionalIndicator = (char: string) =>
-  String.fromCodePoint(
-    (char.codePointAt(0) as number) - letterA + regionalIndicatorA
-  );
-function countryShorthandToEmojii(country: string) {
-  if (country === "en") {
-    return "🇺🇸";
-  }
-  return country
-    .split("")
-    .map((char) => toRegionalIndicator(char))
-    .join("");
-}
-
-jsonLogic.add_operation("case_insensitive_in", function (wordToMatch, subject) {
-  return subject.toLowerCase().includes(wordToMatch);
-});
-
-interface Tweet {
-  tweet: string;
-  user: string;
-  retweet_count: number;
-  created_at: number;
-  verified: boolean;
-  lang: string;
-}
-
+const MAX_ARRAY_SIZE = 10_000;
 function App() {
-  const currentFilterRef = useRef<any>();
+  const currentFilterRef = useRef<RulesLogic>();
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [tree, setTree] = useState<ImmutableTree>(
     QbUtils.checkTree(QbUtils.loadTree(InitialQueryValue), QueryBuilderConfig)
   );
+  const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket>();
   const parentRef = useRef<HTMLDivElement>(null);
+  const pauseRef = useRef(false);
+  const [capturePercent, setCapturePercent] = useState(0.05);
+  const capturePercentRef = useRef<number>(capturePercent);
+
+  useEffect(() => {
+    capturePercentRef.current = capturePercent;
+  }, [capturePercent]);
 
   const rowVirtualizer = useVirtual({
     size: tweets.length,
@@ -72,26 +45,40 @@ function App() {
     wsRef.current = ws;
     ws.binaryType = "blob";
     ws.addEventListener("message", (event) => {
+      if (pauseRef.current || Math.random() > capturePercentRef.current) {
+        return;
+      }
       const tweet = JSON.parse(event.data);
-      if (currentFilterRef.current) {
-        // we filter on client side because when filter is changed
-        // there is a small time interval where server hasn't gotten the new filter
-        if (jsonLogic.apply(currentFilterRef.current, tweet)) {
-          setTweets((prev) => {
-            return [...prev, tweet];
-          });
-        }
-      } else {
+      // we filter on client side because when filter is changed
+      // there is a small time interval where server hasn't gotten the new filter
+      if (
+        currentFilterRef.current === undefined ||
+        (currentFilterRef.current &&
+          jsonLogic.apply(currentFilterRef.current, tweet))
+      ) {
         setTweets((prev) => {
-          return [...prev, tweet];
+          if (prev.length >= MAX_ARRAY_SIZE) {
+            return [tweet, ...prev.slice(0, MAX_ARRAY_SIZE / 2)];
+          }
+          return [tweet, ...prev];
         });
       }
     });
     ws.addEventListener("open", (params) => {
+      setConnected(true);
       console.log("ws connection open!", params);
+    });
+    ws.addEventListener("error", (err) => {
+      console.error("ws error", err);
+    });
+    ws.addEventListener("close", () => {
+      setConnected(false);
+      wsRef.current = undefined;
+      console.log("ws closed");
     });
     return () => {
       ws.close();
+      setConnected(false);
       wsRef.current = undefined;
     };
   }, []);
@@ -102,139 +89,235 @@ function App() {
 
   const handleQuery = () => {
     const rule = QbUtils.jsonLogicFormat(tree, QueryBuilderConfig);
-    currentFilterRef.current = rule.logic;
+    currentFilterRef.current = rule.logic as RulesLogic;
     setTweets([]);
     wsRef.current?.readyState === WebSocket.OPEN &&
       wsRef.current?.send(JSON.stringify(rule.logic));
+    pauseRef.current = false;
   };
 
-  const handleStop = () => {
-    wsRef.current?.readyState === WebSocket.OPEN && wsRef.current?.send("");
+  const handlePlay = () => {
+    pauseRef.current = false;
+  };
+  const handlePause = () => {
+    pauseRef.current = true;
   };
 
+  const handleScrollToEnd = () => {
+    rowVirtualizer.scrollToIndex(rowVirtualizer.totalSize);
+  };
+  const handleScrollToTop = () => {
+    rowVirtualizer.scrollToIndex(0);
+  };
   return (
     <div
       className="App"
       style={{
         display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
+        justifyContent: "space-around",
+        margin: 25,
       }}
     >
-      <Query
-        {...QueryBuilderConfig}
-        value={tree}
-        onChange={(immutableTree) => {
-          setTree(immutableTree);
+      <div
+        style={{
+          position: "fixed",
+          right: 5,
+          top: 5,
         }}
-        renderBuilder={renderBuilder}
-      />
-      <div>
-        <Button text="Query" intent={Intent.PRIMARY} onClick={handleQuery} />
-        <Button text="Stop" intent={Intent.DANGER} onClick={handleStop} />
+      >
+        {tweets.length} Tweets
+        <Icon
+          icon="offline"
+          intent={connected ? Intent.SUCCESS : Intent.DANGER}
+        />
       </div>
       <div
-        ref={parentRef}
-        className="List"
         style={{
-          height: `800px`,
-          width: `80%`,
-          overflow: "auto",
-          border: "1px solid black",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Query
+          {...QueryBuilderConfig}
+          value={tree}
+          onChange={(immutableTree) => {
+            setTree(immutableTree);
+          }}
+          renderBuilder={renderBuilder}
+        />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-around",
+          }}
+        >
+          <Tooltip2 content="Start Stream">
+            <Button intent={Intent.SUCCESS} icon="play" onClick={handlePlay} />
+          </Tooltip2>
+
+          <Tooltip2 content="Pause Stream">
+            <Button
+              intent={Intent.WARNING}
+              icon="pause"
+              onClick={handlePause}
+            />
+          </Tooltip2>
+
+          <Tooltip2 content="Apply Filter">
+            <Button
+              intent={Intent.PRIMARY}
+              icon="filter-open"
+              onClick={handleQuery}
+            />
+          </Tooltip2>
+        </div>
+        <div>
+          <Tooltip2 content="Larger capture rates may affect performance!">
+            Capture Rate
+          </Tooltip2>
+
+          <Slider
+            min={0}
+            max={1}
+            stepSize={0.01}
+            labelStepSize={0.25}
+            onChange={(key) => {
+              setCapturePercent(key);
+            }}
+            labelRenderer={(val: number) => {
+              return `${Math.round(val * 100)}%`;
+            }}
+            value={capturePercent}
+          />
+        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          width: 650,
+          height: 800,
         }}
       >
         <div
+          ref={parentRef}
+          className="List"
           style={{
-            height: `${rowVirtualizer.totalSize}px`,
-            width: "100%",
-            position: "relative",
+            height: `100%`,
+            width: `100%`,
+            overflow: "auto",
+            border: "1px solid black",
           }}
         >
-          {rowVirtualizer.virtualItems
-            .filter((row) => row.index !== undefined)
-            .map((virtualRow) => {
-              const { user, verified, tweet, created_at, retweet_count, lang } =
-                tweets[virtualRow.index];
-              const hashTags = Array.from(
-                tweet.matchAll(/\B(\#[a-zA-Z]+\b)(?!;)/g)
-              ).map((match) => match[0]);
-              return (
-                <Card
-                  key={`${user}${created_at}${retweet_count}`}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: `${virtualRow.size}px`,
-                    transform: `translateY(${virtualRow.start}px)`,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <div
+          <div
+            style={{
+              height: `${rowVirtualizer.totalSize}px`,
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {rowVirtualizer.virtualItems
+              .filter((row) => row.index !== undefined)
+              .map((virtualRow) => {
+                const {
+                  user,
+                  verified,
+                  tweet,
+                  created_at,
+                  retweet_count,
+                  lang,
+                } = tweets[virtualRow.index];
+                const hashTags = Array.from(tweet.matchAll(hashTagRegex)).map(
+                  (match) => match[0]
+                );
+                return (
+                  <Card
+                    key={`${user}${created_at}${retweet_count}`}
                     style={{
-                      display: "flex",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 15,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {user}{" "}
-                      {verified ? (
-                        <Icon intent={Intent.SUCCESS} icon="confirm" />
-                      ) : null}
-                    </span>
-                    <span
-                      style={{
-                        color: "grey",
-                        marginLeft: 10,
-                      }}
-                    >
-                      Created At {format(new Date(created_at), "PPpp")}
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      padding: "5px 0",
-                    }}
-                  >
-                    {tweet.replaceAll(/\B(\#[a-zA-Z]+\b)(?!;)/g, "")}{" "}
-                    {hashTags.map((tag) => (
-                      <a
-                        href={`https://twitter.com/hashtag/${tag.replace(
-                          "#",
-                          ""
-                        )}?src=hashtag_click`}
-                      >
-                        {tag}
-                      </a>
-                    ))}
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
+                      position: "absolute",
+                      padding: 10,
+                      top: 0,
+                      left: 0,
                       width: "100%",
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
                     }}
                   >
-                    <span>Retweets {retweet_count}</span>
-                    <span
-                    // style={{
-                    //   marginLeft: 15,
-                    // }}
+                    <div
+                      style={{
+                        display: "flex",
+                      }}
                     >
-                      {lang.toUpperCase()} {countryShorthandToEmojii(lang)}
-                    </span>
-                  </div>
-                </Card>
-              );
-            })}
+                      <span
+                        style={{
+                          fontSize: 15,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {user}{" "}
+                        {verified ? (
+                          <Icon intent={Intent.SUCCESS} icon="confirm" />
+                        ) : null}
+                      </span>
+                      <span
+                        style={{
+                          color: "grey",
+                          marginLeft: 10,
+                        }}
+                      >
+                        Created At {format(new Date(created_at), "PPpp")}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        padding: "10px 0",
+                      }}
+                    >
+                      {tweet.replaceAll(hashTagRegex, "")}{" "}
+                      {hashTags.map((tag) => (
+                        <a
+                          key={tag}
+                          href={`https://twitter.com/hashtag/${tag.replace(
+                            "#",
+                            ""
+                          )}?src=hashtag_click`}
+                        >
+                          {tag}
+                        </a>
+                      ))}
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                      }}
+                    >
+                      <span>
+                        <Icon icon="refresh" /> {retweet_count}
+                      </span>
+                      <span>
+                        {lang.toUpperCase()} {countryShorthandToEmojii(lang)}
+                      </span>
+                    </div>
+                  </Card>
+                );
+              })}
+          </div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <Button icon="arrow-up" onClick={handleScrollToTop} />
+          <Button icon="arrow-down" onClick={handleScrollToEnd} />
         </div>
       </div>
     </div>
@@ -242,34 +325,3 @@ function App() {
 }
 
 export default App;
-
-// let i = 0;
-// let s: EventSource;
-// useEffect(() => {
-//   let count = {
-//     verified: 0,
-//     notVerified: 0,
-//   }
-//   let startTime = performance.now();
-//   const msgHandler = (event:MessageEvent<string>) => {
-//     i += 1;
-//     if (performance.now() - startTime>1000) {
-//       s.close()
-//       s.removeEventListener("message", msgHandler);
-//       console.log('count', count);
-//     }
-//     const tweet = JSON.parse(event.data) as Tweet;
-//     if (tweet.verified) {
-//       count.verified += 1;
-//     } else {
-//       count.notVerified += 1;
-//     }
-
-//     if (i % 10 === 0) {
-//       console.log('event', i, tweet);
-//     }
-//   }
-
-//   s = new EventSource("https://tweet-service.herokuapp.com/stream");
-//   s.addEventListener("message", msgHandler);
-// }, [])

@@ -45,8 +45,20 @@ You can learn more in the [Create React App documentation](https://facebook.gith
 
 To learn React, check out the [React documentation](https://reactjs.org/).
 
+TODO:
+Keep view scrolled to top
+
+## Assumptions Made
+
+- lang in tweet is lower case
+- it is ok to stream a certain percentage of tweets instead of always 100%
+
 ## Improvements
 
+- responsive design
+- Slider to adjust sample percentage
+- Cleaner code
+- retry/reconnect logic
 - be able to choose from available languages rather than specifying the two letters
 - Logging to splunk or something
 - Unit and integration tests

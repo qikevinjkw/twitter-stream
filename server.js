@@ -5,6 +5,7 @@ const expressWs = require("express-ws")(app);
 const jsonLogic = require("json-logic-js");
 const http = require("http");
 const EventSource = require("eventsource");
+const { throttle } = require("lodash");
 
 jsonLogic.add_operation("regexp_matches", function (pattern, subject) {
   if (typeof pattern === "string") {
@@ -20,6 +21,10 @@ jsonLogic.add_operation("Date", Date);
 const connectionMapping = {};
 app.ws("/", (ws, req) => {
   ws.id = uuid();
+
+  ws.throttledSend = throttle((arg) => {
+    ws.send(arg);
+  }, 50);
   connectionMapping[ws.id] = { filterJson: null, ws };
   ws.on("message", (msg) => {
     if (!msg) {
@@ -44,17 +49,8 @@ es.addEventListener("message", (event) => {
     const tweet = JSON.parse(event.data);
     Object.entries(connectionMapping).forEach(
       ([connId, { ws, filterJson }]) => {
-        if (!filterJson) {
-          if (Math.random() < 0.00004) {
-            ws.send(event.data);
-          }
-        } else {
-          const result = jsonLogic.apply(filterJson, tweet);
-          if (result) {
-            if (Math.random() < 0.1) {
-              ws.send(event.data);
-            }
-          }
+        if (!filterJson || jsonLogic.apply(filterJson, tweet)) {
+          ws.throttledSend(event.data);
         }
       }
     );
