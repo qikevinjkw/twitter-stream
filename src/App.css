@@ -14,6 +14,25 @@
 .group.group-or-rule {
   background: #379ddb;
 }
+
+.qb-lite .group--header:hover .group--header .group--drag-handler,
+.qb-lite .group--header:hover .group--header .group--actions,
+.qb-lite .group--header:not(:hover) .group--drag-handler,
+.qb-lite .group--header:not(:hover) .group--actions,
+.qb-lite .rule_group:not(:hover) .group--drag-handler,
+.qb-lite .rule_group:not(:hover) .group--actions {
+  opacity: 1;
+}
+
+.qb-lite .rule:hover .rule .widget--valuesrc,
+.qb-lite .rule:hover .rule .rule--drag-handler,
+.qb-lite .rule:hover .rule .rule--header,
+.qb-lite .rule:not(:hover) .widget--valuesrc,
+.qb-lite .rule:not(:hover) .rule--drag-handler,
+.qb-lite .rule:not(:hover) .rule--header {
+  opacity: 1;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;

@@ -6,6 +6,7 @@ import {
   Utils as QbUtils,
 } from "react-awesome-query-builder";
 import { toaster } from "./utils";
+import "react-awesome-query-builder/lib/css/styles.css";
 
 type ValueSource = "value" | "field" | "func" | "const";
 
@@ -146,7 +147,13 @@ export function QueryBuilder({
   value: ImmutableTree;
 }) {
   const renderBuilder = (props: any) => {
-    return <Builder {...props} />;
+    return (
+      <div className="query-builder-container" style={{ padding: "10px" }}>
+        <div className="query-builder qb-lite">
+          <Builder {...props} />;
+        </div>
+      </div>
+    );
   };
 
   return (
