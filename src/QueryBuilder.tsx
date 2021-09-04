@@ -94,7 +94,6 @@ export const QueryBuilderConfig = {
       labelForFormat: "Regex",
       valueSources: ["value"],
       jsonLogic: (field: any, _op: any, val: string) => {
-        console.log("jsonlogic", field, _op, val);
         const regexRemoveLeadingTrailingSlashes = val.replace(/^\/|\/$/g, "");
         try {
           new RegExp(regexRemoveLeadingTrailingSlashes);
