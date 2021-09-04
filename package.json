@@ -26,7 +26,7 @@
     "web-vitals": "^1.0.1"
   },
   "engines": {
-    "node": "12.16.1"
+    "node": ">=12.16.1"
   },
   "scripts": {
     "start": "concurrently \"yarn dev-server\"  \"yarn dev-client\"",
