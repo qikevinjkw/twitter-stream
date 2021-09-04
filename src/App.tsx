@@ -50,7 +50,7 @@ function App() {
     const ws = new WebSocket(
       process.env.NODE_ENV === "development"
         ? "ws://localhost:4000"
-        : "ws://glacial-dawn-01556.herokuapp.com/"
+        : "wss://glacial-dawn-01556.herokuapp.com/"
     );
     wsRef.current = ws;
     ws.binaryType = "blob";

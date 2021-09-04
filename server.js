@@ -1,9 +1,10 @@
-const express = require("express");
 const { v4: uuid } = require("uuid");
+const express = require("express");
+const https = require("https");
 const app = express();
-const expressWs = require("express-ws")(app);
+const server = https.createServer({}, app);
+const expressWs = require("express-ws")(app, server);
 const jsonLogic = require("json-logic-js");
-const http = require("http");
 const EventSource = require("eventsource");
 const { throttle } = require("lodash");
 
@@ -51,9 +52,14 @@ app.get("/test", (req, res) => {
   res.json({ test: "hi" });
 });
 
-app.listen(process.env.PORT || 4000, () => {
-  console.log("Listening on port 4000");
-});
+console.log("env", process.env.NODE_ENV);
+if (process.env.NODE_ENV === "development") {
+  app.listen(process.env.PORT || 4000, () => {
+    console.log("Listening on port 4000");
+  });
+} else {
+  server.listen(process.env.PORT || 4000);
+}
 
 const es = new EventSource("https://tweet-service.herokuapp.com/stream");
 es.addEventListener("message", (event) => {
