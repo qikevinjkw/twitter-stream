@@ -101,8 +101,12 @@ function App() {
     const rule = QbUtils.jsonLogicFormat(tree, QueryBuilderConfig);
     currentFilterRef.current = rule.logic as RulesLogic;
     setTweets([]);
-    wsRef.current?.readyState === WebSocket.OPEN &&
-      wsRef.current?.send(JSON.stringify(rule.logic));
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current?.send(
+        currentFilterRef.current ? JSON.stringify(currentFilterRef.current) : ""
+      );
+    }
+
     setIsPaused(false);
   };
 
@@ -150,8 +154,12 @@ function App() {
             {rowVirtualizer.virtualItems
               .filter((row) => row.index !== undefined)
               .map((virtualRow) => {
+                const { user, created_at, retweet_count } =
+                  tweets[virtualRow.index];
+
                 return (
                   <TweetCard
+                    key={`${user}${created_at}${retweet_count}`}
                     tweetObj={tweets[virtualRow.index]}
                     virtualRow={virtualRow}
                   />

@@ -41,12 +41,12 @@
   height: 100%;
   width: 100%;
   overflow: auto;
-  border: 1px solid black;
+  border: 1px solid #b3aeae;
 }
 
 .TweetCard {
   position: absolute;
-  padding: 10;
+  padding: 12px;
   top: 0;
   left: 0;
   width: 100%;

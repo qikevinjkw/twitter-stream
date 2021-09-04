@@ -151,11 +151,14 @@ export function QueryBuilder({
   };
 
   return (
-    <Query
-      {...QueryBuilderConfig}
-      value={value}
-      onChange={onChange}
-      renderBuilder={renderBuilder}
-    />
+    <div>
+      <h3>Filter Panel</h3>
+      <Query
+        {...QueryBuilderConfig}
+        value={value}
+        onChange={onChange}
+        renderBuilder={renderBuilder}
+      />
+    </div>
   );
 }

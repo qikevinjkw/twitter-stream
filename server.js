@@ -30,7 +30,12 @@ app.ws("/", (ws, req) => {
     if (!msg) {
       connectionMapping[ws.id].filterJson = null;
     } else {
-      connectionMapping[ws.id].filterJson = JSON.parse(msg);
+      try {
+        const filter = JSON.parse(msg);
+        connectionMapping[ws.id].filterJson = filter;
+      } catch (error) {
+        console.error("Error parsing filterJson", error);
+      }
     }
   });
 

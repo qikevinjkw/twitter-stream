@@ -16,7 +16,6 @@ export function TweetCard({
   );
   return (
     <Card
-      key={`${user}${created_at}${retweet_count}`}
       className="TweetCard"
       style={{
         height: `${virtualRow.size}px`,

@@ -27,12 +27,14 @@ The tweets are placed in a virtualized window via react-virtual library which wi
 ## Improvements That Can be Made
 
 - User feedback to see if the user experience is intuitive and covers their use cases
-- Authentication if needed
+- Handle dynamic sizes in virtual tweet panel - currently all tweets are short, but longer tweets would need special logic in virtual container to display correctly
+- Allow users to save filters
+- Allow user to change throttling rate, it's currently fixed to 50ms
+- Improve the UI look, style
 - Typescript for server code
 - retry/reconnect logic - automatically handle reconnect if any issues
 - Logging errors to splunk
 - Unit and integration tests
-- If user needs to be able to see tweets in the past we could use something like Kafka
 - use select dropdown for languages filter - currently they need to manually type 'es'
 - Light/Dark theme :)
 - responsive UI

@@ -19,7 +19,8 @@ export function SettingsActionPanel({
   isPaused: boolean;
 }) {
   return (
-    <>
+    <div>
+      <h3>Actions</h3>
       <div className="SettingsActionsPanel">
         <Tooltip2 content={isPaused ? "Start Stream" : "Pause Stream"}>
           {isPaused ? (
@@ -45,9 +46,13 @@ export function SettingsActionPanel({
           <Button icon="refresh" onClick={handleReconnect} />
         </Tooltip2>
       </div>
-      <div>
+      <div
+        style={{
+          marginTop: 15,
+        }}
+      >
         <Tooltip2 content="Larger capture rates may affect performance!">
-          Capture Rate
+          <h3>Capture Rate</h3>
         </Tooltip2>
 
         <Slider
@@ -62,6 +67,6 @@ export function SettingsActionPanel({
           value={capturePercent}
         />
       </div>
-    </>
+    </div>
   );
 }
