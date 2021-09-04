@@ -38,3 +38,6 @@ The tweets are placed in a virtualized window via react-virtual library which wi
 - use select dropdown for languages filter - currently they need to manually type 'es'
 - Light/Dark theme :)
 - responsive UI
+
+UI deployed at https://twitter-stream.vercel.app/
+Server at glacial-dawn-01556.herokuapp.com - Turn on at https://dashboard.heroku.com/apps/glacial-dawn-01556/resources
