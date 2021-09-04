@@ -21,7 +21,7 @@
 .qb-lite .group--header:not(:hover) .group--actions,
 .qb-lite .rule_group:not(:hover) .group--drag-handler,
 .qb-lite .rule_group:not(:hover) .group--actions {
-  opacity: 1;
+  opacity: 1 !important;
 }
 
 .qb-lite .rule:hover .rule .widget--valuesrc,
@@ -30,7 +30,7 @@
 .qb-lite .rule:not(:hover) .widget--valuesrc,
 .qb-lite .rule:not(:hover) .rule--drag-handler,
 .qb-lite .rule:not(:hover) .rule--header {
-  opacity: 1;
+  opacity: 1 !important;
 }
 
 .App-logo {
