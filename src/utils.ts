@@ -1,3 +1,4 @@
+import { Intent, Position, Toaster } from "@blueprintjs/core";
 import jsonLogic from "json-logic-js";
 
 const letterA = "a".codePointAt(0) as number;
@@ -38,3 +39,19 @@ export const hashTagRegex = new RegExp(/\B(\#[a-zA-Z]+\b)(?!;)/g);
 jsonLogic.add_operation("case_insensitive_in", function (wordToMatch, subject) {
   return subject.toLowerCase().includes(wordToMatch);
 });
+
+export const _toaster = Toaster.create({
+  position: Position.TOP_RIGHT,
+});
+
+export const toaster = {
+  success: (message: string) => {
+    _toaster.show({ message, intent: Intent.SUCCESS });
+  },
+  danger: (message: string) => {
+    _toaster.show({ message, intent: Intent.DANGER });
+  },
+  warn: (message: string) => {
+    _toaster.show({ message, intent: Intent.WARNING });
+  },
+};

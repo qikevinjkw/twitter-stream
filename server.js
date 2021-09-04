@@ -39,6 +39,10 @@ app.ws("/", (ws, req) => {
   });
 });
 
+app.get("/", (req, res) => {
+  res.sendStatus(200);
+});
+
 app.listen(4000, () => {
   console.log("Listening on port 4000");
 });
@@ -58,49 +62,3 @@ es.addEventListener("message", (event) => {
     console.error("Error occurred: ", err);
   }
 });
-
-// http.get({
-//     agent: false,
-//     path: '/stream',
-//     hostname: 'tweet-service.herokuapp.com'
-// }, (res) => {
-//     res.on('data', data => {
-//         const dataStr = data.toString()
-//         const strData = dataStr.substring(dataStr.indexOf("{"))
-//         try {
-//             console.log('parse', strData);
-//             const jsonData = JSON.parse(strData);
-//             Object.entries(connectionMapping).forEach(([connId, {ws, filterJson}]) => {
-
-//                 if (!filterJson) {
-//                     if (Math.random() < 0.00001) {
-//                         ws.send(strData)
-//                     }
-//                 } else {
-//                     const result = jsonLogic.apply(filterJson, jsonData);
-//                     if (result) {
-//                         ws.send(strData)
-//                     }
-//                 }
-//             })
-//         } catch (err) {
-//           console.error("Error occurred: ", err)
-//         }
-
-//     })
-// })
-
-/**
- when data comes back from tweet server, parse it
- for each client, if the client's filter passes, send the message to that client
- Object.keys(connectionMapping).forEach(conn => {
-     if (!conn.filterJson) {
-         if (Math.random() < .001)
-            conn.ws.send(data)
-         return;
-     }
-     if (jsonLogic.apply(conn.filterJson)) {
-         conn.ws.send(data)
-     }
- })
- */

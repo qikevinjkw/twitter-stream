@@ -1,10 +1,12 @@
+import { Intent } from "@blueprintjs/core";
 import {
-  Query,
-  Builder,
   BasicConfig,
-  Utils as QbUtils,
+  Builder,
   ImmutableTree,
+  Query,
+  Utils as QbUtils,
 } from "react-awesome-query-builder";
+import { toaster } from "./utils";
 
 type ValueSource = "value" | "field" | "func" | "const";
 
@@ -15,8 +17,8 @@ export const InitialQueryValue = {
     [QbUtils.uuid()]: {
       type: "rule" as const,
       properties: {
-        field: null,
-        operator: null,
+        field: "tweet",
+        operator: "contains",
         value: [],
         valueSrc: [],
         valueType: [],
@@ -26,54 +28,6 @@ export const InitialQueryValue = {
 };
 export const QueryBuilderConfig = {
   ...BasicConfig,
-  types: {
-    ...BasicConfig.types,
-    select: {
-      ...BasicConfig.types.select,
-      widgets: {
-        ...BasicConfig.types.select.widgets,
-        select: {
-          ...BasicConfig.types.select.widgets.select,
-          operators: ["equals", "contains", "regex"],
-        },
-      },
-    },
-    text: {
-      ...BasicConfig.types.text,
-      widgets: {
-        ...BasicConfig.types.text.widgets,
-        text: {
-          ...BasicConfig.types.text.widgets.text,
-          operators: ["contains", "regex", "equals"],
-        },
-      },
-    },
-  },
-  operators: {
-    ...BasicConfig.operators,
-    contains: {
-      label: "Case Insensitive Contains",
-      labelForFormat: "Case Insensitive Contains",
-      valueSources: ["value"],
-      jsonLogic: (field: any, _op: any, val: any) => {
-        return { case_insensitive_in: [val.toLowerCase(), field] };
-      },
-    },
-    regex: {
-      label: "Regex",
-      labelForFormat: "Regex",
-      valueSources: ["value"],
-      jsonLogic: (field: any, _op: any, val: any) => ({
-        regexp_matches: [val, field],
-      }),
-    },
-    equals: {
-      label: "Equals",
-      labelForFormat: "Equals",
-      valueSources: ["value"],
-      jsonLogic: (field: any, _op: any, val: any) => ({ "==": [val, field] }),
-    },
-  },
   fields: {
     retweet_count: {
       label: "Retweet Count",
@@ -117,21 +71,92 @@ export const QueryBuilderConfig = {
     },
     lang: {
       label: "Language",
-      type: "select",
+      type: "text",
       valueSources: ["value" as ValueSource],
       operators: ["contains", "regex", "equals"],
-      fieldSettings: {
-        listValues: [
-          { value: "en", title: "English" },
-          { value: "fr", title: "France" },
-          { value: "es", title: "Spanish" },
-        ],
+    },
+  },
+  settings: {
+    ...BasicConfig.settings,
+    showNot: false,
+  },
+  operators: {
+    ...BasicConfig.operators,
+    contains: {
+      label: "Case Insensitive Contains",
+      labelForFormat: "Case Insensitive Contains",
+      valueSources: ["value"],
+      jsonLogic: (field: any, _op: any, val: any) => {
+        return { case_insensitive_in: [val.toLowerCase(), field] };
       },
-      // fieldSettings: {
-      //   jsonLogic: (params: string) => {
-      //     return params.toLowerCase();
-      //   },
-      // },
+    },
+    regex: {
+      label: "Regex",
+      labelForFormat: "Regex",
+      valueSources: ["value"],
+      jsonLogic: (field: any, _op: any, val: string) => {
+        console.log("jsonlogic", field, _op, val);
+        const regexRemoveLeadingTrailingSlashes = val.replace(/^\/|\/$/g, "");
+        try {
+          new RegExp(regexRemoveLeadingTrailingSlashes);
+        } catch (error) {
+          toaster.danger("Invalid regex, should be of form: /textgoeshere/");
+        }
+        return {
+          regexp_matches: [regexRemoveLeadingTrailingSlashes, field],
+        };
+      },
+    },
+    equals: {
+      label: "Equals",
+      labelForFormat: "Equals",
+      valueSources: ["value"],
+      jsonLogic: (field: any, _op: any, val: any) => ({ "==": [val, field] }),
+    },
+  },
+
+  types: {
+    ...BasicConfig.types,
+    select: {
+      ...BasicConfig.types.select,
+      widgets: {
+        ...BasicConfig.types.select.widgets,
+        select: {
+          ...BasicConfig.types.select.widgets.select,
+          operators: ["equals", "contains", "regex"],
+        },
+      },
+    },
+    text: {
+      ...BasicConfig.types.text,
+      widgets: {
+        ...BasicConfig.types.text.widgets,
+        text: {
+          ...BasicConfig.types.text.widgets.text,
+          operators: ["contains", "regex", "equals"],
+        },
+      },
     },
   },
 } as any;
+
+export function QueryBuilder({
+  onChange,
+  value,
+}: {
+  onChange: (immutableTree: ImmutableTree) => void;
+  value: ImmutableTree;
+}) {
+  const renderBuilder = (props: any) => {
+    return <Builder {...props} />;
+  };
+
+  return (
+    <Query
+      {...QueryBuilderConfig}
+      value={value}
+      onChange={onChange}
+      renderBuilder={renderBuilder}
+    />
+  );
+}

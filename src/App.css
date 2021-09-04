@@ -4,11 +4,55 @@
 
 .App {
   text-align: center;
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  height: 100%;
+  width: 100%;
 }
 
+.group.group-or-rule {
+  background: #379ddb;
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;
+}
+
+.SettingsPanel {
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+}
+
+.SettingsActionsPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.TweetsPanel {
+  display: flex;
+  width: 650px;
+  height: 100%;
+}
+
+.TweetsOverflowContainer {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  border: 1px solid black;
+}
+
+.TweetCard {
+  position: absolute;
+  padding: 10;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 @media (prefers-reduced-motion: no-preference) {

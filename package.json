@@ -26,7 +26,8 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "yarn dev-server && yarn dev-client",
+    "dev-client": "react-scripts start",
     "dev-server": "nodemon --inspect ./server.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -56,6 +57,7 @@
     "express": "^4.17.1",
     "nodemon": "^2.0.12",
     "react-awesome-query-builder": "^4.4.3",
-    "socket.io": "^4.2.0"
+    "socket.io": "^4.2.0",
+    "wait-on": "^6.0.0"
   }
 }
