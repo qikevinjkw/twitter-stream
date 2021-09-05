@@ -1,5 +1,4 @@
 import { Intent, Position, Toaster } from "@blueprintjs/core";
-import jsonLogic from "json-logic-js";
 
 const letterA = "a".codePointAt(0) as number;
 const regionalIndicatorA = "🇦".codePointAt(0) as number;
@@ -26,18 +25,6 @@ export interface Tweet {
   verified: boolean;
   lang: string;
 }
-
-jsonLogic.add_operation("regexp_matches", function (pattern, subject) {
-  if (typeof pattern === "string") {
-    pattern = new RegExp(pattern);
-  }
-  return pattern.test(subject);
-});
-export const hashTagRegex = new RegExp(/\B(#[a-zA-Z]+\b)(?!;)/g);
-
-jsonLogic.add_operation("case_insensitive_in", function (wordToMatch, subject) {
-  return subject.toLowerCase().includes(wordToMatch);
-});
 
 export const _toaster = Toaster.create({
   position: Position.TOP_RIGHT,

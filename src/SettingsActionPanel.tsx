@@ -1,7 +1,12 @@
-import { Button, Intent, Slider } from "@blueprintjs/core";
+import { Button, Intent, Slider, Tag } from "@blueprintjs/core";
 import { Tooltip2 } from "@blueprintjs/popover2";
+import { RulesLogic } from "json-logic-js";
+import { ISavedFilter } from "./App";
 
 export function SettingsActionPanel({
+  savedFilters,
+  setSavedFilters,
+  handleSavedFilterClick,
   setCapturePercent,
   capturePercent,
   handlePlay,
@@ -10,6 +15,8 @@ export function SettingsActionPanel({
   handleReconnect,
   isPaused,
 }: {
+  savedFilters: ISavedFilter[];
+  setSavedFilters: React.Dispatch<React.SetStateAction<ISavedFilter[]>>;
   setCapturePercent: (val: number) => void;
   capturePercent: number;
   handlePlay: () => void;
@@ -17,6 +24,7 @@ export function SettingsActionPanel({
   handleQuery: () => void;
   handleReconnect: () => void;
   isPaused: boolean;
+  handleSavedFilterClick: (jsonLogic: RulesLogic) => void;
 }) {
   return (
     <div>
@@ -66,6 +74,29 @@ export function SettingsActionPanel({
           }}
           value={capturePercent}
         />
+      </div>
+      <div
+        style={{
+          marginTop: 20,
+          display: "flex",
+          flexWrap: "wrap",
+        }}
+      >
+        {savedFilters.map((filter) => {
+          return (
+            <Tag
+              onClick={() => handleSavedFilterClick(filter.jsonLogic)}
+              onRemove={(e) => {
+                e.stopPropagation();
+                setSavedFilters((prev) => {
+                  return prev.filter((f) => f.name !== filter.name);
+                });
+              }}
+            >
+              {filter.name}
+            </Tag>
+          );
+        })}
       </div>
     </div>
   );

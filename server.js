@@ -7,13 +7,13 @@ const http = require("http");
 const EventSource = require("eventsource");
 const { throttle } = require("lodash");
 
-jsonLogic.add_operation("regexp_matches", function (pattern, subject) {
+jsonLogic.add_operation("regex", function (subject, pattern) {
   if (typeof pattern === "string") {
     pattern = new RegExp(pattern);
   }
   return pattern.test(subject);
 });
-jsonLogic.add_operation("case_insensitive_in", function (wordToMatch, subject) {
+jsonLogic.add_operation("contains", function (subject, wordToMatch) {
   return subject.toLowerCase().includes(wordToMatch);
 });
 jsonLogic.add_operation("Date", Date);

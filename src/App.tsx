@@ -15,6 +15,11 @@ import { StatusWidget } from "./StatusWidget";
 import { TweetCard } from "./TweetCard";
 import { SettingsActionPanel } from "./SettingsActionPanel";
 
+export interface ISavedFilter {
+  name: string;
+  jsonLogic: RulesLogic;
+}
+const SAVED_FILTERS_KEY = "SAVED_FILTERS_KEY";
 const MAX_ARRAY_SIZE = 10_000;
 function App() {
   const currentFilterRef = useRef<RulesLogic>();
@@ -30,6 +35,17 @@ function App() {
   const [capturePercent, setCapturePercent] = useState(0.05);
   const capturePercentRef = useRef<number>(capturePercent);
   const [retry, setRetry] = useState(0);
+  const [savedFilters, setSavedFilters] = useState<ISavedFilter[]>(() => {
+    const _savedFilters = localStorage.getItem(SAVED_FILTERS_KEY);
+    if (_savedFilters) {
+      return JSON.parse(_savedFilters);
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(savedFilters));
+  }, [savedFilters]);
 
   useEffect(() => {
     isPausedRef.current = isPaused;
@@ -100,24 +116,49 @@ function App() {
   }, [retry]);
 
   const handleReconnect = () => setRetry((prev) => prev + 1);
-
-  const handleQuery = () => {
-    const rule = QbUtils.jsonLogicFormat(tree, QueryBuilderConfig);
-    currentFilterRef.current = rule.logic as RulesLogic;
-    setTweets([]);
+  const handleNewFilter = (jsonLogic: RulesLogic) => {
+    currentFilterRef.current = jsonLogic;
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current?.send(
         currentFilterRef.current ? JSON.stringify(currentFilterRef.current) : ""
       );
     }
 
+    setTweets([]);
     setIsPaused(false);
+  };
+  const handleQuery = () => {
+    const rule = QbUtils.jsonLogicFormat(tree, QueryBuilderConfig);
+    const jsonLogic = rule.logic as RulesLogic;
+
+    const filterDescription = QbUtils.queryString(tree, QueryBuilderConfig);
+    filterDescription &&
+      setSavedFilters((prev) => {
+        return prev
+          .filter((f) => f.name !== filterDescription)
+          .concat([
+            {
+              name: filterDescription,
+              jsonLogic,
+            },
+          ]);
+      });
+
+    handleNewFilter(jsonLogic);
+  };
+
+  const handleSavedFilterClick = (jsonLogic: RulesLogic) => {
+    const newTree = QbUtils.loadFromJsonLogic(jsonLogic, QueryBuilderConfig);
+
+    handleNewFilter(jsonLogic);
+    setTree(newTree);
   };
 
   const handlePlay = () => {
     setIsPaused(false);
     toaster.success("Streaming");
   };
+
   const handlePause = () => {
     setIsPaused(true);
     toaster.success("Paused");
@@ -137,6 +178,9 @@ function App() {
       <div className="SettingsPanel">
         <QueryBuilder value={tree} onChange={setTree} />
         <SettingsActionPanel
+          handleSavedFilterClick={handleSavedFilterClick}
+          setSavedFilters={setSavedFilters}
+          savedFilters={savedFilters}
           setCapturePercent={setCapturePercent}
           capturePercent={capturePercent}
           handlePlay={handlePlay}

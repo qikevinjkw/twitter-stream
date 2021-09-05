@@ -1,7 +1,9 @@
 import { Card, Icon, Intent } from "@blueprintjs/core";
 import { format } from "date-fns";
 import { VirtualItem } from "react-virtual/types";
-import { countryShorthandToEmojii, hashTagRegex, Tweet } from "./utils";
+import { countryShorthandToEmojii, Tweet } from "./utils";
+
+const hashTagRegex = new RegExp(/\B(#[a-zA-Z]+\b)(?!;)/g);
 
 export function TweetCard({
   tweetObj,

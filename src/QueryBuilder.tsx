@@ -7,8 +7,20 @@ import {
 } from "react-awesome-query-builder";
 import { toaster } from "./utils";
 import "react-awesome-query-builder/lib/css/styles.css";
+import jsonLogic from "json-logic-js";
 
 type ValueSource = "value" | "field" | "func" | "const";
+
+jsonLogic.add_operation("regex", function (subject, pattern) {
+  if (typeof pattern === "string") {
+    pattern = new RegExp(pattern);
+  }
+  return pattern.test(subject);
+});
+
+jsonLogic.add_operation("contains", function (subject, wordToMatch) {
+  return subject.toLowerCase().includes(wordToMatch);
+});
 
 export const InitialQueryValue = {
   id: QbUtils.uuid(),
@@ -86,14 +98,16 @@ export const QueryBuilderConfig = {
       label: "Case Insensitive Contains",
       labelForFormat: "Case Insensitive Contains",
       valueSources: ["value"],
+      jsonLogic2: "contains",
       jsonLogic: (field: any, _op: any, val: any) => {
-        return { case_insensitive_in: [val.toLowerCase(), field] };
+        return { contains: [field, val.toLowerCase()] };
       },
     },
     regex: {
       label: "Regex",
       labelForFormat: "Regex",
       valueSources: ["value"],
+      jsonLogic2: "regex",
       jsonLogic: (field: any, _op: any, val: string) => {
         const regexRemoveLeadingTrailingSlashes = val.replace(/^\/|\/$/g, "");
         try {
@@ -102,7 +116,7 @@ export const QueryBuilderConfig = {
           toaster.danger("Invalid regex, should be of form: /textgoeshere/");
         }
         return {
-          regexp_matches: [regexRemoveLeadingTrailingSlashes, field],
+          regex: [field, regexRemoveLeadingTrailingSlashes],
         };
       },
     },
@@ -110,7 +124,7 @@ export const QueryBuilderConfig = {
       label: "Equals",
       labelForFormat: "Equals",
       valueSources: ["value"],
-      jsonLogic: (field: any, _op: any, val: any) => ({ "==": [val, field] }),
+      jsonLogic: "==",
     },
   },
 

@@ -103,3 +103,8 @@
     transform: rotate(360deg);
   }
 }
+
+.bp3-tag {
+  cursor: pointer;
+  margin: 5px;
+}
