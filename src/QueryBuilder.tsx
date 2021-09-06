@@ -164,7 +164,7 @@ export function QueryBuilder({
     return (
       <div className="query-builder-container" style={{ padding: "10px" }}>
         <div className="query-builder qb-lite">
-          <Builder {...props} />;
+          <Builder {...props} />
         </div>
       </div>
     );

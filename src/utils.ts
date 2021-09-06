@@ -32,12 +32,12 @@ export const _toaster = Toaster.create({
 
 export const toaster = {
   success: (message: string) => {
-    _toaster.show({ message, intent: Intent.SUCCESS });
+    _toaster.show({ message, intent: Intent.SUCCESS, timeout: 2000 });
   },
   danger: (message: string) => {
-    _toaster.show({ message, intent: Intent.DANGER });
+    _toaster.show({ message, intent: Intent.DANGER, timeout: 2000 });
   },
   warn: (message: string) => {
-    _toaster.show({ message, intent: Intent.WARNING });
+    _toaster.show({ message, intent: Intent.WARNING, timeout: 2000 });
   },
 };

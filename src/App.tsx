@@ -119,9 +119,7 @@ function App() {
   const handleNewFilter = (jsonLogic: RulesLogic) => {
     currentFilterRef.current = jsonLogic;
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current?.send(
-        currentFilterRef.current ? JSON.stringify(currentFilterRef.current) : ""
-      );
+      wsRef.current?.send(jsonLogic ? JSON.stringify(jsonLogic) : "");
     }
 
     setTweets([]);

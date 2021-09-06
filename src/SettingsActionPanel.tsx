@@ -54,15 +54,8 @@ export function SettingsActionPanel({
           <Button icon="refresh" onClick={handleReconnect} />
         </Tooltip2>
       </div>
-      <div
-        style={{
-          marginTop: 15,
-        }}
-      >
-        <Tooltip2 content="Larger capture rates may affect performance!">
-          <h3>Capture Rate</h3>
-        </Tooltip2>
-
+      <div>
+        <h3>Capture Rate</h3>
         <Slider
           min={0}
           max={1}
@@ -77,26 +70,35 @@ export function SettingsActionPanel({
       </div>
       <div
         style={{
-          marginTop: 20,
+          marginTop: 15,
           display: "flex",
+          flexDirection: "column",
           flexWrap: "wrap",
         }}
       >
-        {savedFilters.map((filter) => {
-          return (
-            <Tag
-              onClick={() => handleSavedFilterClick(filter.jsonLogic)}
-              onRemove={(e) => {
-                e.stopPropagation();
-                setSavedFilters((prev) => {
-                  return prev.filter((f) => f.name !== filter.name);
-                });
-              }}
-            >
-              {filter.name}
-            </Tag>
-          );
-        })}
+        <h3>Search History</h3>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+          }}
+        >
+          {savedFilters.map((filter) => {
+            return (
+              <Tag
+                onClick={() => handleSavedFilterClick(filter.jsonLogic)}
+                onRemove={(e) => {
+                  e.stopPropagation();
+                  setSavedFilters((prev) => {
+                    return prev.filter((f) => f.name !== filter.name);
+                  });
+                }}
+              >
+                {filter.name}
+              </Tag>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
