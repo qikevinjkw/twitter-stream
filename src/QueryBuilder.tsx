@@ -11,6 +11,7 @@ import jsonLogic from "json-logic-js";
 
 type ValueSource = "value" | "field" | "func" | "const";
 
+// TODO: Share these with server
 jsonLogic.add_operation("regex", function (subject, pattern) {
   if (typeof pattern === "string") {
     pattern = new RegExp(pattern);

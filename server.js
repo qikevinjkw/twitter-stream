@@ -3,7 +3,6 @@ const { v4: uuid } = require("uuid");
 const app = express();
 const expressWs = require("express-ws")(app);
 const jsonLogic = require("json-logic-js");
-const http = require("http");
 const EventSource = require("eventsource");
 const { throttle } = require("lodash");
 

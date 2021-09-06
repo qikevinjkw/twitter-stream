@@ -28,7 +28,6 @@ The tweets are placed in a virtualized window via react-virtual library which wi
 
 - User feedback to see if the user experience is intuitive and covers their use cases
 - Handle dynamic sizes in virtual tweet panel - currently all tweets are short, but longer tweets would need special logic in virtual container to display correctly
-- Allow users to save filters
 - Allow user to change throttling rate, it's currently fixed to 50ms
 - Improve the UI look, style
 - Typescript for server code
